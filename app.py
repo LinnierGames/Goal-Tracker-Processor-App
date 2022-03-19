@@ -29,10 +29,10 @@ def on_message(client, userdata, msg):
         print("Finish papermill")
 
         url = 'http://localhost:3000/reports'
-        most_recent_report_filepath = most_recent_report_filepath()
-        files = {'report': open(most_recent_report_filepath, 'rb')}
+        report_filepath = most_recent_report_filepath()
+        files = {'report': open(report_filepath, 'rb')}
 
-        print("Start uploading pdf", most_recent_report_filepath)
+        print("Start uploading pdf", report_filepath)
         r = requests.post(url, files=files, headers={ 'key': REMOTE_STORE_API_KEY })
         print(r)
         print("Finish uploading pdf")

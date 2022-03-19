@@ -5,24 +5,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# import RPi.GPIO as GPIO, time
-# from gpiozero import DigitalOutputDevice
-
-# fp_toggle_power_pin = DigitalOutputDevice(26)
-# base2 = DigitalOutputDevice(6)
-# base3 = DigitalOutputDevice(13)
-# base4 = DigitalOutputDevice(5)
-
 MQTT_SERVER = "localhost"
-MQTT_PATH = "fireplace/#"
 
 REMOTE_STORE_API_KEY = os.getenv('KEY')
-
-# def fireplace_toggle_power():
-#     fp_toggle_power_pin.on()
-#     time.sleep(0.5)
-#     fp_toggle_power_pin.off()
-#     time.sleep(0.5)
  
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
@@ -44,19 +29,29 @@ def on_message(client, userdata, msg):
         print("Finish papermill")
 
         url = 'http://localhost:3000/reports'
-        files = {'report': open('/Users/ericksmicrowave/Documents/Habits/Reports/Report-Grade 2022-03-16.pdf', 'rb')}
+        most_recent_report_filepath = most_recent_report_filepath()
+        files = {'report': open(most_recent_report_filepath, 'rb')}
 
-        print("Start uploading pdf")
+        print("Start uploading pdf", most_recent_report_filepath)
         r = requests.post(url, files=files, headers={ 'key': REMOTE_STORE_API_KEY })
         print(r)
         print("Finish uploading pdf")
-        
-    #     payload_str = str(msg.payload.decode("utf-8"))
-        
-    #     if payload_str == "toggle-power":
-    #         print("Toggle Power")
-    #         fireplace_toggle_power()
 
+import glob
+import os
+
+def most_recent_report_filepath():
+    dir_name = '/Users/ericksmicrowave/Documents/Habits/Reports/'
+    # Get list of all files only in the given directory
+    list_of_files = filter( os.path.isfile,
+                            glob.glob(dir_name + '*') )
+    # Sort list of files based on last modification time in ascending order
+    list_of_files = sorted( list_of_files,
+                            key = os.path.getmtime)
+
+    most_recent_report = list_of_files[-1]
+
+    return most_recent_report
 
 client = mqtt.Client()
 client.on_connect = on_connect
